@@ -6,7 +6,8 @@ LABEL maintainer="Steven Allen <steven@stebalien.com>"
 RUN apt-get update && apt-get install -y \
   libssl-dev \
   ca-certificates \
-  fuse
+  fuse \
+  jq
 
 ENV SRC_DIR /go-ipfs
 
@@ -58,6 +59,8 @@ COPY --from=0 /tmp/su-exec/su-exec-static /sbin/su-exec
 COPY --from=0 /tmp/tini /sbin/tini
 COPY --from=0 /bin/fusermount /usr/local/bin/fusermount
 COPY --from=0 /etc/ssl/certs /etc/ssl/certs
+# Copy the jq binary
+COPY --from=0 /usr/bin/jq /usr/local/bin/jq
 
 # Add suid bit on fusermount so it will run properly
 RUN chmod 4755 /usr/local/bin/fusermount
@@ -65,8 +68,13 @@ RUN chmod 4755 /usr/local/bin/fusermount
 # Fix permissions on start_ipfs (ignore the build machine's permissions)
 RUN chmod 0755 /usr/local/bin/start_ipfs
 
+RUN chmod 0755 /usr/local/bin/jq
+
 # This shared lib (part of glibc) doesn't seem to be included with busybox.
 COPY --from=0 /lib/*-linux-gnu*/libdl.so.2 /lib/
+COPY --from=0 /usr/lib/*-linux-gnu*/libjq.so.1 /lib/
+COPY --from=0 /usr/lib/*-linux-gnu*/libjq.so.1.0.4 /lib/
+COPY --from=0 /usr/lib/*-linux-gnu*/libonig.so.5 /lib/
 
 # Copy over SSL libraries.
 COPY --from=0 /usr/lib/*-linux-gnu*/libssl.so* /usr/lib/

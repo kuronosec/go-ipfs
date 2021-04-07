@@ -426,16 +426,6 @@ func (r *FSRepo) openDatastore() error {
 	if err != nil {
 		return err
 	}
-	spec := dsc.DiskSpec()
-
-	oldSpec, err := r.readSpec()
-	if err != nil {
-		return err
-	}
-	if oldSpec != spec.String() {
-		return fmt.Errorf("datastore configuration of '%s' does not match what is on disk '%s'",
-			oldSpec, spec.String())
-	}
 
 	d, err := dsc.Create(r.path)
 	if err != nil {
